@@ -1,23 +1,40 @@
-import logo from './logo.svg';
-import './App.css';
-
+import React, { useEffect } from 'react'
+import WebIM from './utils/WebIM'
+import LoginStatus from './component/loginStatus'
+import Message from './component/message'
+import store from './redux/store'
+import { updateInputStatusAction } from './redux/actions'
+import "antd/dist/antd.css";
+import "./App.css"
 function App() {
+  useEffect(() => {
+    WebIM.conn.addEventHandler("loginStatus", {
+      onOpened: () => {
+        console.log('Login Success!');
+      },
+      onClosed: () => {
+        console.log('Logout!');
+      }
+    });
+    WebIM.conn.addEventHandler("message", {
+      onTextMessage: (msg) => {
+        console.log('onTextMessage', msg);
+      },
+      onCmdMessage: (msg) => {
+        console.log('onCmdMessage', msg);
+        if (msg.action === "onFocus") {
+          store.dispatch(updateInputStatusAction(true))
+        } else {
+          store.dispatch(updateInputStatusAction(false))
+        }
+      },
+    })
+  }, [])
+
   return (
     <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+      <LoginStatus />
+      <Message />
     </div>
   );
 }
